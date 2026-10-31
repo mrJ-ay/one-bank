@@ -81,9 +81,12 @@ class BankAudio {
 
 const audio = new BankAudio();
 
+const AUTH_KEY = 'onebank_token';
+const PKCE_KEY = 'onebank_pkce';
+
 // State
 const state = {
-  authToken: localStorage.getItem('oneid_token') || '',
+  authToken: localStorage.getItem(AUTH_KEY) || '',
   config: null,
   account: null,
   hideBalance: false,
@@ -110,6 +113,11 @@ function showToast(msg) {
 // =========================================================
 // 2. PKCE SSO Helpers
 // =========================================================
+function getRedirectUri() {
+  const origin = window.location.origin;
+  return origin.endsWith('/') ? origin : origin + '/';
+}
+
 function base64UrlEncode(buffer) {
   let binary = '';
   const bytes = new Uint8Array(buffer);
@@ -119,71 +127,74 @@ function base64UrlEncode(buffer) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function sha256(plain) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(plain);
-  return window.crypto.subtle.digest('SHA-256', data);
-}
-
-function generateRandomString(length) {
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  let result = '';
-  const values = new Uint32Array(length);
-  window.crypto.getRandomValues(values);
-  for (let i = 0; i < length; i++) {
-    result += charset[values[i] % charset.length];
-  }
-  return result;
-}
-
 async function startOneIdLogin() {
-  if (!state.config) return;
-  const verifier = generateRandomString(64);
-  const challenge = base64UrlEncode(await sha256(verifier));
-  const stateVal = generateRandomString(32);
+  localStorage.removeItem(AUTH_KEY);
 
-  sessionStorage.setItem('onebank_code_verifier', verifier);
-  sessionStorage.setItem('onebank_auth_state', stateVal);
+  const verifier = base64UrlEncode(crypto.getRandomValues(new Uint8Array(32)));
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const challenge = base64UrlEncode(new Uint8Array(digest));
+  const stateVal = base64UrlEncode(crypto.getRandomValues(new Uint8Array(18)));
 
-  const redirectUri = `${window.location.origin}/callback`;
-  const authUrl = `${state.config.oneIdUrl}/oauth/authorize?client_id=${state.config.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${challenge}&code_challenge_method=S256&state=${stateVal}`;
+  sessionStorage.setItem(PKCE_KEY, JSON.stringify({ verifier, state: stateVal }));
 
-  window.location.href = authUrl;
+  const oneid = (state.config?.oneIdUrl || 'https://oneid-icvq.onrender.com').replace(/\/$/, '');
+  const loginUrl = `${oneid}/login.html?` + new URLSearchParams({
+    client_id: state.config?.clientId || 'onebank',
+    redirect_uri: getRedirectUri(),
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    state: stateVal
+  });
+
+  window.location.assign(loginUrl);
 }
 
 async function handleOAuthCallback() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
-  const stateVal = params.get('state');
+  const directToken = params.get('token');
 
-  if (code && stateVal) {
-    const savedState = sessionStorage.getItem('onebank_auth_state');
-    const verifier = sessionStorage.getItem('onebank_code_verifier');
+  if (directToken) {
+    state.authToken = directToken;
+    localStorage.setItem(AUTH_KEY, directToken);
+    localStorage.setItem('oneid_token', directToken);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showToast('🎉 ONEID 로그인 완료! 계좌가 연결되었습니다.');
+    return;
+  }
 
-    if (stateVal !== savedState) {
-      console.warn('OAuth state mismatch. Guest fallback applied.');
+  if (code) {
+    const saved = JSON.parse(sessionStorage.getItem(PKCE_KEY) || 'null');
+    sessionStorage.removeItem(PKCE_KEY);
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (!saved || saved.state !== params.get('state')) {
+      console.warn('OAuth State validation failed');
       return;
     }
 
     try {
-      const redirectUri = `${window.location.origin}/callback`;
-      const res = await fetch(`${state.config.oneIdUrl}/oauth/token`, {
+      const oneid = (state.config?.oneIdUrl || 'https://oneid-icvq.onrender.com').replace(/\/$/, '');
+      const res = await fetch(`${oneid}/api/oauth/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: state.config.clientId,
-          grant_type: 'authorization_code',
-          code,
-          redirect_uri: redirectUri,
-          code_verifier: verifier
+          client_id: state.config?.clientId || 'onebank',
+          redirect_uri: getRedirectUri(),
+          code: code,
+          code_verifier: saved.verifier
         })
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.access_token) {
         state.authToken = data.access_token;
-        localStorage.setItem('oneid_token', state.authToken);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        localStorage.setItem(AUTH_KEY, data.access_token);
+        localStorage.setItem('oneid_token', data.access_token);
+        showToast('🎉 ONEID 로그인 성공! 계좌가 연결되었습니다.');
+      } else {
+        console.error('ONEID token exchange failed:', data);
+        showToast(data.detail || '로그인 토큰 교환에 실패했습니다.');
       }
     } catch (e) {
       console.error('Failed to exchange token:', e);
@@ -191,16 +202,41 @@ async function handleOAuthCallback() {
   }
 }
 
-// Ensure Token (Guest fallback)
-function ensureAuthToken() {
-  if (!state.authToken) {
+// Token Loader (ONEID token priority, with guest fallback)
+function loadInitialToken() {
+  let saved = localStorage.getItem(AUTH_KEY);
+
+  // If missing or guest, check for existing ONEID login tokens from sister apps
+  if (!saved || saved.startsWith('guest_')) {
+    try {
+      const ns = localStorage.getItem('ns_auth');
+      if (ns) {
+        const parsed = JSON.parse(ns);
+        if (parsed.token && !parsed.token.startsWith('guest_')) {
+          saved = parsed.token;
+        }
+      }
+    } catch {}
+
+    if (!saved || saved.startsWith('guest_')) {
+      const oid = localStorage.getItem('oneid_token');
+      if (oid && !oid.startsWith('guest_')) {
+        saved = oid;
+      }
+    }
+  }
+
+  if (saved && !saved.startsWith('guest_')) {
+    state.authToken = saved;
+    localStorage.setItem(AUTH_KEY, saved);
+    localStorage.setItem('oneid_token', saved);
+  } else {
     let guestId = localStorage.getItem('onebank_guest_id');
     if (!guestId) {
       guestId = 'guest_' + Math.random().toString(36).substring(2, 8);
       localStorage.setItem('onebank_guest_id', guestId);
     }
     state.authToken = `${guestId}_익명의고객`;
-    localStorage.setItem('oneid_token', state.authToken);
   }
 }
 
@@ -528,7 +564,9 @@ function setupEventHandlers() {
 
   document.getElementById('btn-logout').addEventListener('click', () => {
     audio.playTap();
+    localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem('oneid_token');
+    localStorage.removeItem('ns_auth');
     window.location.reload();
   });
 
@@ -692,7 +730,7 @@ async function init() {
   setupEventHandlers();
   await fetchConfig();
   await handleOAuthCallback();
-  ensureAuthToken();
+  loadInitialToken();
   await fetchAccount();
   await fetchLedger(true);
 }
