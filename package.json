@@ -1,0 +1,18 @@
+{
+  "name": "one-bank",
+  "version": "1.0.0",
+  "description": "ONE BANK (원뱅크) — ONEID 통합 인터넷 뱅킹 & 실시간 계좌 송금 플랫폼",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --env-file=.env server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

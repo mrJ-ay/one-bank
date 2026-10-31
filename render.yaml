@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: one-bank
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.0.0
+      - key: ONEID_URL
+        value: https://oneid-icvq.onrender.com
+      - key: ONEID_CLIENT_ID
+        value: onebank
+      - key: SLOTS_URL
+        value: https://vegas-slots-2izy.onrender.com
+      - key: JARKET_URL
+        value: https://jarket.onrender.com
+      - key: GTB_URL
+        value: https://grand-theft-bicycle.onrender.com
+      - key: NEXUS_URL
+        value: https://nexus-exchange.onrender.com
+      - key: ATELIER_URL
+        value: https://atelier-j.vercel.app
+      - key: DATABASE_URL
+        sync: false

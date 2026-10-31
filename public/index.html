@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ONE BANK (원뱅크) · ONEID 통합 인터넷 뱅킹</title>
+  <meta name="description" content="카지노, 자켓 마켓, 엄복동 자전거, 넥서스 증권 자금을 하나로 모으는 스마트 인터넷 뱅킹. 실시간 계좌 송금 및 매일 받는 파킹이자.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand-wrap">
+        <a href="/" class="brand-logo">
+          <div class="logo-icon">🏦</div>
+          <div class="logo-text">
+            <span class="logo-title">ONE BANK</span>
+            <span class="logo-sub">원뱅크</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <div id="db-status-badge" class="status-badge">
+          <span class="status-dot"></span>
+          <span class="status-label">Neon DB 연동</span>
+        </div>
+
+        <div id="user-profile-wrap">
+          <button id="btn-login" class="btn-login">ONEID 로그인</button>
+          <div id="user-pill" class="user-pill hidden">
+            <span class="user-avatar">👤</span>
+            <span id="user-name" class="user-name">고객님</span>
+            <button id="btn-logout" class="btn-logout" title="로그아웃">로그아웃</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content App Shell -->
+  <main class="app-shell">
+    
+    <!-- Top Financial Greeting -->
+    <section class="welcome-section">
+      <div class="greeting-box">
+        <h1 class="user-greeting"><span id="greeting-name">고객</span>님의 금융 홈</h1>
+        <p class="greeting-sub">네온스트립 카지노 · 자켓마트 · 엄복동 자전거 · 넥서스 증권 통합 계좌</p>
+      </div>
+      <button id="btn-refresh" class="btn-refresh" title="새로고침">🔄 잔고 갱신</button>
+    </section>
+
+    <!-- Core Main Account Card (Toss/KakaoBank style) -->
+    <section class="main-card-wrap">
+      <div class="bank-card">
+        <div class="card-chip"></div>
+        <div class="card-header">
+          <div class="account-title-wrap">
+            <span class="bank-badge">ONE BANK</span>
+            <span id="card-account-name" class="account-title">ONE 주거래 자유입출금통장</span>
+          </div>
+          <div class="account-no-wrap">
+            <span id="card-account-no" class="account-no">777-01-000000</span>
+            <button id="btn-copy-acc" class="btn-copy" title="계좌번호 복사">복사</button>
+          </div>
+        </div>
+
+        <div class="card-balance-section">
+          <span class="balance-label">출금 가능 잔액</span>
+          <div class="balance-row">
+            <span class="currency-symbol">₩</span>
+            <span id="card-balance" class="balance-amount">0</span>
+            <button id="btn-toggle-eye" class="btn-eye" title="잔액 숨기기/보기">👁️</button>
+          </div>
+          <div class="credit-info">
+            <span class="credit-label">신용 한도:</span>
+            <span id="card-credit" class="credit-val">500</span> pt
+          </div>
+        </div>
+
+        <!-- Primary Action Buttons inside Card -->
+        <div class="card-actions">
+          <button id="btn-open-transfer" class="action-btn btn-send">
+            <span class="btn-icon">💸</span>
+            <span class="btn-text">송금하기</span>
+          </button>
+          <button id="btn-open-share" class="action-btn btn-share">
+            <span class="btn-icon">📥</span>
+            <span class="btn-text">계좌 공유</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Daily Parking Interest Card (토스뱅크 지금 이자 받기 감성) -->
+    <section class="interest-section">
+      <div class="interest-card">
+        <div class="interest-left">
+          <div class="interest-icon-circle">💰</div>
+          <div class="interest-texts">
+            <div class="interest-title-row">
+              <span class="interest-title">매일 받는 파킹이자</span>
+              <span class="interest-badge">연 3.5% 일할 계산</span>
+            </div>
+            <p id="interest-desc" class="interest-desc">오늘 쌓인 이자: <b>+₩ 0</b> (보유 잔고 기준 매일 지급!)</p>
+          </div>
+        </div>
+        <button id="btn-claim-interest" class="btn-claim-interest">지금 이자 받기</button>
+      </div>
+    </section>
+
+    <!-- Quick Shortcuts to Integrated Ecosystem -->
+    <section class="ecosystem-section">
+      <div class="section-head">
+        <h2>🔗 실시간 자금 연동 서비스</h2>
+        <span class="sec-note">어디서든 번 돈은 ONE BANK 잔고로 100% 실시간 공유됩니다.</span>
+      </div>
+      <div class="ecosystem-grid">
+        <a id="link-slots" href="https://vegas-slots-2izy.onrender.com" target="_blank" rel="noopener" class="eco-card eco-slots">
+          <div class="eco-icon">🎰</div>
+          <div class="eco-info">
+            <div class="eco-name">네온스트립 카지노</div>
+            <div class="eco-desc">슬롯 잭팟 터뜨리고 즉시 통장 입금</div>
+          </div>
+          <span class="eco-arrow">↗</span>
+        </a>
+
+        <a id="link-gtb" href="https://grand-theft-bicycle.onrender.com" target="_blank" rel="noopener" class="eco-card eco-gtb">
+          <div class="eco-icon">🚲</div>
+          <div class="eco-info">
+            <div class="eco-name">엄복동의 도시</div>
+            <div class="eco-desc">자전거 5분 사수 100만원 & 찹샵 매각</div>
+          </div>
+          <span class="eco-arrow">↗</span>
+        </a>
+
+        <a id="link-jarket" href="https://jarket.onrender.com" target="_blank" rel="noopener" class="eco-card eco-jarket">
+          <div class="eco-icon">🛒</div>
+          <div class="eco-info">
+            <div class="eco-name">자켓 가상 마켓</div>
+            <div class="eco-desc">이마트 감성 마켓 유저 물품 판매</div>
+          </div>
+          <span class="eco-arrow">↗</span>
+        </a>
+
+        <a id="link-nexus" href="https://nexus-exchange.onrender.com" target="_blank" rel="noopener" class="eco-card eco-nexus">
+          <div class="eco-icon">📈</div>
+          <div class="eco-info">
+            <div class="eco-name">넥서스 증권거래소</div>
+            <div class="eco-desc">실시간 주식 호가 매매 & IPO 상장</div>
+          </div>
+          <span class="eco-arrow">↗</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Transaction Ledger Section (입출금 내역) -->
+    <section class="ledger-section">
+      <div class="section-head-split">
+        <div>
+          <h2>📊 입출금 거래 내역</h2>
+          <p class="ledger-sub">전체 서비스에서 발생한 모든 입출금과 송금 기록</p>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-type="all">전체</button>
+          <button class="tab-btn" data-type="deposit">입금 (+)</button>
+          <button class="tab-btn" data-type="withdraw">출금 (-)</button>
+        </div>
+      </div>
+
+      <div class="ledger-list-box">
+        <div id="ledger-loading" class="ledger-loading hidden">
+          <div class="spinner"></div>
+          <span>거래 내역 불러오는 중...</span>
+        </div>
+
+        <div id="ledger-empty" class="ledger-empty hidden">
+          <div class="empty-icon">📭</div>
+          <p>거래 내역이 아직 없습니다.</p>
+          <span class="empty-sub">송금을 보내거나 카지노, 자전거, 마켓을 이용해 보세요!</span>
+        </div>
+
+        <ul id="ledger-list" class="ledger-list">
+          <!-- Dynamic Items Injected Here -->
+        </ul>
+
+        <div class="ledger-footer">
+          <button id="btn-load-more" class="btn-load-more hidden">더 보기</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal 1: Real-Time Transfer Modal (송금 모달) -->
+  <div id="modal-transfer" class="modal-backdrop hidden">
+    <div class="modal-box transfer-box">
+      <div class="modal-header">
+        <h3 class="modal-title">💸 실시간 계좌 송금</h3>
+        <button id="btn-close-transfer" class="btn-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Step 1: Recipient Search -->
+        <div class="form-group">
+          <label class="form-label" for="input-recipient">받는 분 (계좌번호 또는 닉네임)</label>
+          <div class="search-input-wrap">
+            <input type="text" id="input-recipient" class="form-input" placeholder="예: 777-01-xxxxxx 또는 유저 닉네임" autocomplete="off">
+            <button id="btn-search-recipient" class="btn-inner-search">조회</button>
+          </div>
+          <!-- Recipient Preview Result -->
+          <div id="recipient-result" class="recipient-result hidden">
+            <div class="recipient-avatar">👤</div>
+            <div class="recipient-details">
+              <span id="res-name" class="res-name">홍길동</span>
+              <span id="res-acc" class="res-acc">777-01-123456 (ONE 주거래)</span>
+            </div>
+            <div class="res-check">✅ 확인됨</div>
+          </div>
+          <div id="recipient-error" class="recipient-error hidden">존재하지 않는 계좌 또는 닉네임입니다.</div>
+        </div>
+
+        <!-- Step 2: Amount Input -->
+        <div class="form-group">
+          <div class="amount-label-row">
+            <label class="form-label" for="input-amount">송금 금액</label>
+            <span class="my-avail">출금 가능: <b id="transfer-avail-bal">₩ 0</b></span>
+          </div>
+
+          <div class="amount-input-wrap">
+            <span class="amount-curr">₩</span>
+            <input type="number" id="input-amount" class="form-input amount-input" placeholder="0" min="1" step="1">
+          </div>
+
+          <!-- Quick Amount Buttons -->
+          <div class="quick-amounts">
+            <button class="btn-quick" data-add="10000">+1만</button>
+            <button class="btn-quick" data-add="50000">+5만</button>
+            <button class="btn-quick" data-add="100000">+10만</button>
+            <button class="btn-quick" data-add="1000000">+100만</button>
+            <button id="btn-all-in" class="btn-quick btn-all">전액</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Memo -->
+        <div class="form-group">
+          <label class="form-label" for="input-memo">내 통장 표시 메모 (선택)</label>
+          <input type="text" id="input-memo" class="form-input" placeholder="예: 더치페이 정산, 회비" maxlength="20">
+        </div>
+
+        <div class="fee-notice">
+          <span>송금 수수료</span>
+          <span class="fee-free">평생 무료 (₩0)</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-submit-transfer" class="btn-primary-action" disabled>송금하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Transfer Receipt Modal (송금 완료 영수증) -->
+  <div id="modal-receipt" class="modal-backdrop hidden">
+    <div class="modal-box receipt-box">
+      <div class="receipt-header">
+        <div class="success-icon-bounce">✓</div>
+        <h3>송금이 완료되었습니다!</h3>
+        <p class="receipt-sub">상대방의 ONE BANK 계좌에 즉시 입금되었습니다.</p>
+      </div>
+
+      <div class="receipt-card">
+        <div class="receipt-amount-row">
+          <span class="receipt-label">이체 금액</span>
+          <span id="rcpt-amount" class="receipt-big-amount">₩ 0</span>
+        </div>
+        <hr class="receipt-divider">
+        <div class="receipt-row">
+          <span class="receipt-label">받는 분</span>
+          <span id="rcpt-to" class="receipt-val">홍길동 (777-01-xxxxxx)</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">보낸 분</span>
+          <span id="rcpt-from" class="receipt-val">고객</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">이체 일시</span>
+          <span id="rcpt-time" class="receipt-val">2026.10.31 21:00</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">거래 번호</span>
+          <span id="rcpt-txid" class="receipt-val">TX000000</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">송금 후 잔액</span>
+          <span id="rcpt-balance" class="receipt-val font-bold">₩ 0</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">수수료</span>
+          <span class="receipt-val fee-free">₩0 (무료)</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-close-receipt" class="btn-primary-action">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Account Share & QR Modal -->
+  <div id="modal-share" class="modal-backdrop hidden">
+    <div class="modal-box share-box">
+      <div class="modal-header">
+        <h3 class="modal-title">📥 내 계좌 정보</h3>
+        <button id="btn-close-share" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="share-qr-box">
+          <div class="qr-placeholder">
+            <span class="qr-bank-text">ONE BANK</span>
+            <span class="qr-acc-large" id="share-acc-text">777-01-000000</span>
+            <span class="qr-name-large" id="share-name-text">고객님</span>
+          </div>
+        </div>
+        <p class="share-notice">위 계좌번호로 ONE BANK 유저가 송금하면<br>즉시 내 카지노·마켓·자전거 공용 잔고로 입금됩니다.</p>
+        <button id="btn-copy-share" class="btn-primary-action">계좌번호 복사하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="foot-brand">
+        <b>ONE BANK</b> · 대한민국 엄복동 & 네온스트립 가상 금융
+      </div>
+      <p class="foot-desc">
+        본 사이트는 ONEID 통합 생태계(네온스트립 카지노, 자켓 마켓, 엄복동의 도시, 넥서스 증권)의 금융 거래 및 상호 송금을 위해 운영되는 가상 인터넷 뱅킹입니다.
+      </p>
+      <div class="foot-links">
+        <a href="https://atelier-j.vercel.app" target="_blank" rel="noopener">🏛️ 아뜰리에 J 미술관</a>
+        <a href="https://oneid-helpdesk.onrender.com" target="_blank" rel="noopener">고객센터 문의 ↗</a>
+      </div>
+      <div class="copyright">© 2026 ONE BANK. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
